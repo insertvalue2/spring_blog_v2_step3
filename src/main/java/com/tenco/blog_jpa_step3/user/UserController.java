@@ -32,8 +32,7 @@ public class UserController {
     public String updateForm(HttpServletRequest request) {
         log.info("회원 수정 페이지 이동");
 
-        User sessionUser = (User) session.getAttribute("sessionUser"); 
-        
+        User sessionUser = (User) session.getAttribute("sessionUser");
         User user = userRepository.findById(sessionUser.getId());
         request.setAttribute("name", "회원정보 수정");
         request.setAttribute("user", user);
