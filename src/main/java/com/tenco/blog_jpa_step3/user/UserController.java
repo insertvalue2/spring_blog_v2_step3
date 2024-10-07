@@ -1,17 +1,18 @@
 package com.tenco.blog_jpa_step3.user;
 
+import com.tenco.blog_jpa_step3.commom.errors.Exception400;
+import com.tenco.blog_jpa_step3.commom.errors.Exception401;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-
-import com.tenco.blog_jpa_step3.user.UserDTO.JoinDTO;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Controller
@@ -88,8 +89,12 @@ public class UserController {
      */
     @PostMapping("/join")
     public String join(@ModelAttribute(name = "joinDTO") UserDTO.JoinDTO joinDTO) {
-        // DTO를 엔티티로 변환 후 저장
-        userRepository.save(joinDTO.toEntity());
+        try {
+            userRepository.save(joinDTO.toEntity());
+        } catch (DataIntegrityViolationException e) {
+            throw new Exception400("동일한 유저네임이 존재합니다");
+        }
+
         return "redirect:/login-form";
     }
 
@@ -104,11 +109,12 @@ public class UserController {
             User sessionUser = userRepository.findByUsernameAndPassword(dto.getUsername(), dto.getPassword());
             session.setAttribute("sessionUser", sessionUser);
             return "redirect:/";
-        } catch (Exception e) {
-            // 로그인 실패 시 로그인 폼으로 리다이렉트
-            return "redirect:/login-form?error";
+        }catch (EmptyResultDataAccessException e){
+            throw new Exception401("유저네임 혹은 비밀번호가 틀렸어요");
         }
     }
+
+
 
     /**
      * 로그아웃 처리 메서드

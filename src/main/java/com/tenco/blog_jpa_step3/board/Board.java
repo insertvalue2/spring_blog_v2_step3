@@ -13,15 +13,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * Board 엔티티는 블로그 게시글을 나타내는 JPA 엔티티 클래스입니다.
  */
-@Data // Lombok을 이용해 getter, setter, toString 등을 자동으로 생성합니다.
+@Getter // Lombok을 이용해 getter, setter, toString 등을 자동으로 생성합니다.
+@Setter
 @Entity // JPA에게 이 클래스가 엔티티임을 알립니다.
 @Table(name = "board_tb") // 실제 데이터베이스 테이블 이름을 지정합니다.
 @NoArgsConstructor //  반드시 JPA/Hibernate에서는 엔티티 클래스를 인스턴스화하기 위해 기본 생성자가 필요

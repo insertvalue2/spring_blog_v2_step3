@@ -1,7 +1,11 @@
 package com.tenco.blog_jpa_step3.board;
 
 import java.util.List;
+import java.util.Objects;
 
+import com.tenco.blog_jpa_step3.commom.errors.Exception400;
+import com.tenco.blog_jpa_step3.commom.errors.Exception403;
+import com.tenco.blog_jpa_step3.commom.errors.Exception404;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +35,7 @@ public class BoardController {
     private final BoardRepository boardRepository;
     private final HttpSession session;
 
+
     /**
      * 게시글 수정 처리 메서드
      * 요청 주소: **POST http://localhost:8080/board/{id}/update**
@@ -50,20 +55,17 @@ public class BoardController {
         // 게시글 조회
         Board board = boardRepository.findById(id);
         if (board == null) {
-            return "redirect:/error-404"; // 게시글이 없을 경우 404 에러 페이지로 리다이렉트
+            throw new Exception404("게시글이 존재하지 않습니다"); // 게시글이 없을 경우 404 에러 페이지로 리다이렉트
         }
 
         // 권한 검증 (게시글 작성자만 수정 가능)
-        if (!board.getUser().getId().equals(sessionUser.getId())) {
-            return "redirect:/error-403"; // 권한이 없을 경우 403 에러 페이지로 리다이렉트
+        if(!Objects.equals(sessionUser.getId(), board.getUser().getId())){
+            throw new Exception403("게시글을 수정할 권한이 없습니다");
         }
+
 
         // 게시글 수정 (JPA API 사용)
         boardRepository.updateByIdJPA(id, updateDTO.getTitle(), updateDTO.getContent(), updateDTO.getUsername());
-
-        // 게시글 수정 (JPA JPQL 사용)
-        // boardRepository.updateByIdJPQL(id, updateDTO.getTitle(), updateDTO.getContent(), updateDTO.getUsername());
-        
 
         // 수정 완료 후 게시글 상세보기 페이지로 리다이렉트
         return "redirect:/board/" + id;
@@ -122,11 +124,12 @@ public class BoardController {
         Board board = boardRepository.findById(id);
         if (board == null) {
             // 예외 처리 또는 에러 페이지로 리다이렉트
-            return "redirect:/error-404"; // 예시
+            
+            throw new Exception400("게시글이 존재하지 않습니다");
         }
         if (!board.getUser().getId().equals(sessionUser.getId())) {
             // 권한이 없는 사용자일 경우
-            return "redirect:/error-403"; // 예시
+            throw new Exception403("게시글을 삭제할 권한이 없습니다");
         }
 
         // 게시글 삭제
@@ -152,7 +155,7 @@ public class BoardController {
     /**
      * 게시글 작성 처리 메서드
      * 
-     * @param reqDTO 게시글 작성 요청 DTO
+     * @param dto 게시글 작성 요청 DTO
      * @return 메인 페이지로 리다이렉트
      */
     @PostMapping("/board/save")
@@ -207,17 +210,22 @@ public class BoardController {
         return "board/save-form";
     }
 
-    /**
-     * 게시글 상세보기 메서드 - Eager Fetching 사용
-     * 요청 주소: GET http://localhost:8080/board/1
-     */
+
     @GetMapping("/board/{id}")
-    public String detail(@PathVariable(name = "id") Integer id, HttpServletRequest request) {
-        // 1. 게시글 조회
-        Board board = boardNativeRepository.findById(id);
-        // 2. 조회한 게시글을 요청 속성에 추가
+    public String detail(@PathVariable Integer id, HttpServletRequest request) {
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        Board board = boardRepository.findByIdJoinUser(id);
+
+        // 로그인을 하고, 게시글의 주인이면 isOwner가 true가 된다.
+        boolean isOwner = false;
+        if(sessionUser != null){
+            if(Objects.equals(sessionUser.getId(), board.getUser().getId())){
+                isOwner = true;
+            }
+        }
+
+        request.setAttribute("isOwner", isOwner);
         request.setAttribute("board", board);
-        // 3. 게시글 상세 페이지 템플릿 반환
         return "board/detail";
     }
 
