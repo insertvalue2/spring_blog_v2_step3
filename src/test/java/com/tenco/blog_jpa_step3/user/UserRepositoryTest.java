@@ -1,4 +1,4 @@
-package com.tenco.blog_jpa_step1.user;
+package com.tenco.blog_jpa_step3.user;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -6,9 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import com.tenco.blog_jpa_step3.user.User;
-import com.tenco.blog_jpa_step3.user.UserRepository;
 
 @SpringBootTest
 public class UserRepositoryTest {

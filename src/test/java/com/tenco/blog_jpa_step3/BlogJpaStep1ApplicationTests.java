@@ -1,4 +1,4 @@
-package com.tenco.blog_jpa_step1;
+package com.tenco.blog_jpa_step3;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
