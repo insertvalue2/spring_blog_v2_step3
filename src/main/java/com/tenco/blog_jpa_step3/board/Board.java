@@ -1,19 +1,10 @@
 package com.tenco.blog_jpa_step3.board;
 
-import java.sql.Timestamp;
-
 import com.tenco.blog_jpa_step3.user.User;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
+
+import java.sql.Timestamp;
 
 /**
  * Board 엔티티는 블로그 게시글을 나타내는 JPA 엔티티 클래스입니다.
@@ -29,9 +20,7 @@ public class Board {
     @Id // 기본 키를 나타냅니다.
     @GeneratedValue(strategy = GenerationType.IDENTITY) // 기본 키 생성을 데이터베이스에 위임합니다.
     private Integer id; // 게시글 ID
-
     private String title; // 게시글 제목
-
     private String content; // 게시글 내용
 
     // created_at 컬럼과 매핑하며, 이 필드는 삽입 시 자동으로 설정됨.
@@ -47,6 +36,11 @@ public class Board {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user; // 작성자 정보
+
+    // 데이터베이스 테이블에 매핑되지 않으며, 애플리케이션 내에서만 사용
+    // CRUD 연산 시 자동으로 데이터베이스에 저장되거나 조회되지 않음
+    @Transient
+    private boolean isOwner;
 
     @Builder
     public Board(Integer id, String title, String content, User user, Timestamp createdAt) {
