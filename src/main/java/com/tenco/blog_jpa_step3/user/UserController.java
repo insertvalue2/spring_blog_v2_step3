@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.SessionAttribute;
 
 /**
  * UserController는 사용자(User)와 관련된 HTTP 요청을 처리하는 컨트롤러 계층입니다.
@@ -34,14 +35,7 @@ public class UserController {
      * @return 회원 수정 페이지 뷰
      */
     @GetMapping("/user/update-form")
-    public String updateForm(HttpServletRequest request) {
-        log.info("회원 수정 페이지 이동");
-
-        // 세션에서 로그인한 사용자 정보 가져오기
-        User sessionUser = (User) session.getAttribute("sessionUser");
-        if(sessionUser == null){
-            return "redirect:/login-form"; // 로그인하지 않은 경우 로그인 페이지로 리다이렉트
-        }
+    public String updateForm(HttpServletRequest request, @SessionAttribute("sessionUser") User sessionUser) {
 
         // 서비스 레이어를 통해 사용자 정보 조회
         User user = userService.readUser(sessionUser.getId());
@@ -60,19 +54,11 @@ public class UserController {
      * @return 메인 페이지로 리다이렉트
      */
     @PostMapping("/user/update")
-    public String update(@ModelAttribute(name = "updateDTO") UserDTO.UpdateDTO updateDTO) {
-        // 세션에서 로그인한 사용자 정보 가져오기
-        User sessionUser = (User) session.getAttribute("sessionUser");
-        if (sessionUser == null) {
-            return "redirect:/login-form"; // 로그인하지 않은 경우 로그인 페이지로 리다이렉트
-        }
-
+    public String update(@ModelAttribute(name = "updateDTO") UserDTO.UpdateDTO updateDTO, @SessionAttribute("sessionUser") User sessionUser) {
         // 서비스 레이어를 통해 사용자 정보 수정
         User updatedUser = userService.updateUser(sessionUser.getId(), updateDTO);
-
         // 세션 정보 동기화
         session.setAttribute("sessionUser", updatedUser);
-
         // 수정 완료 후 메인 페이지로 리다이렉트
         return "redirect:/";
     }
@@ -86,7 +72,6 @@ public class UserController {
      */
     @GetMapping("/join-form")
     public String joinForm(Model model) {
-        log.info("회원가입 페이지 이동");
         model.addAttribute("name", "회원가입 페이지");
         return "user/join-form";
     }
@@ -155,7 +140,6 @@ public class UserController {
      */
     @GetMapping("/login-form")
     public String loginForm(Model model) {
-        log.info("로그인 페이지 이동");
         model.addAttribute("name", "로그인 페이지");
         return "user/login-form"; // Mustache 템플릿 경로: user/login-form.mustache
     }

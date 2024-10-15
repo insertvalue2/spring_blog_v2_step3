@@ -19,14 +19,13 @@ public class GlobalExceptionHandler {
         return mav;
     }
 
+
     /**
      * 401 Unauthorized 예외 처리
      */
     @ExceptionHandler(Exception401.class)
-    public ModelAndView handleException401(Exception401 ex, Model model) {
-        ModelAndView mav = new ModelAndView("error/401");
-        mav.addObject("msg", ex.getMessage());
-        return mav;
+    public ModelAndView handleException401(Exception401 ex) {
+        return new ModelAndView("redirect:/login-form");
     }
 
     /**
