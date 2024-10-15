@@ -1,10 +1,13 @@
 package com.tenco.blog_jpa_step3.board;
 
+import com.tenco.blog_jpa_step3.reply.Reply;
 import com.tenco.blog_jpa_step3.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Board 엔티티는 블로그 게시글을 나타내는 JPA 엔티티 클래스입니다.
@@ -29,10 +32,6 @@ public class Board {
     @Column(name = "created_at") 
     private Timestamp createdAt; // 게시글 작성 시간
 
-
-    // Board 엔티티에서 User 엔티티와의 다대일 관계 설정
-    //@ManyToOne(fetch = FetchType.LAZY) // 지연 로딩 설정으로 실제 사용 시점에 로딩
-    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user; // 작성자 정보
@@ -41,6 +40,12 @@ public class Board {
     // CRUD 연산 시 자동으로 데이터베이스에 저장되거나 조회되지 않음
     @Transient
     private boolean isOwner;
+    // 추후 수정 - 게시글 삭제시에 댓글이 있다면 fk 제약 조건 때문에 삭제가 안된다.
+    // cascade = CascadeType.REMOVE 설정 하기
+    // 양방향 맵핑 - 연관관계에 주인은 (Reply) 이다
+    @OneToMany(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    //@OneToMany(mappedBy = "board", fetch = FetchType.LAZY)
+    private List<Reply> replies = new ArrayList<>();
 
     @Builder
     public Board(Integer id, String title, String content, User user, Timestamp createdAt) {
@@ -50,7 +55,6 @@ public class Board {
         this.user = user;
         this.createdAt = createdAt;
     }
-
 }
 
 

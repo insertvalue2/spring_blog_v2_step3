@@ -39,7 +39,9 @@ public class BoardService {
      * @throws Exception404 게시글을 찾을 수 없는 경우 발생
      */
     public Board getBoardDetails(int boardId, User sessionUser) {
-        // 게시글을 ID와 조인하여 조회하고, 존재하지 않으면 예외를 던집니다.
+        // 순서 2
+        // JPQL JOIN FETCH 사용 즉 USER 엔티티 한번게 조인 처리
+        // 그리고 Replay 은 LAZY 전략에 배치 사이즈 설정으로 가져오는 것
         Board board = boardJPARepository.findByIdJoinUser(boardId)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
 
@@ -50,6 +52,19 @@ public class BoardService {
                 isOwner = true;
             }
         }
+
+        // 집중!
+        // 댓글 정보에 내가 작성한 글인지 확인해서 상태값 설정하기
+        board.getReplies().forEach(reply -> {
+            boolean isReplayOwner = false;
+            if(sessionUser != null) {
+                if(reply.getUser().getId() == sessionUser.getId()) {
+                    isReplayOwner = true;
+                }
+            }
+            // 안에서 ...
+            reply.setReplyOwner(isReplayOwner);
+        });
 
         // 코드 추가
         board.setOwner(isOwner); // @Transient 필드 설정
