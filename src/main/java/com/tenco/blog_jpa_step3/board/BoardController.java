@@ -87,7 +87,7 @@ public class BoardController {
      * @param id 삭제할 게시글의 ID
      * @return 메인 페이지로 리다이렉트
      */
-    @PostMapping("/board/{id}/delete")
+    @PostMapping("/board/{id}/delet e")
     public String delete(@PathVariable(name = "id") Integer id) {
         // 세션에서 로그인한 사용자 정보 가져오기
         User sessionUser = (User) session.getAttribute("sessionUser");

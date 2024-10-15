@@ -22,7 +22,7 @@ public class Reply {
     //일반적으로 id는 Long 타입을 사용하는 것이 권장
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     // not null 지정
     @Column(nullable = false)
