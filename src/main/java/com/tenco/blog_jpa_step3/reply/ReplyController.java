@@ -6,25 +6,27 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.SessionAttribute;
 
 @RequiredArgsConstructor
 @Controller
 public class ReplyController {
     private final ReplyService replyService;
-    private final HttpSession session;
 
     /**
      * 댓글 생성
      *
-     * @param reqDTO 댓글 작성 정보
+     * @param reqDTO  댓글 작성 정보
+     * @param session HTTP 세션 객체
      * @return 리다이렉트 URL
      */
     @PostMapping("/reply/save")
-    // @SessionAttribute 어노테이션을 사용하여 세션에 저장된 객체를 매개변수로 바로 받아올 수 있습니다.
-    public String save(ReplyDTO.SaveDTO reqDTO, @SessionAttribute("sessionUser") User sessionUser) {
-        // 인터셉트 수정후 제거
-        // User sessionUser = (User) session.getAttribute("sessionUser");
+    public String save(ReplyDTO.SaveDTO reqDTO, HttpSession session) {
+        // 세션에서 로그인한 사용자 정보 가져오기
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        if (sessionUser == null) {
+            return "redirect:/loginForm"; // 로그인하지 않은 경우 로그인 페이지로 리다이렉트
+        }
+
         replyService.saveReply(reqDTO, sessionUser);
         return "redirect:/board/" + reqDTO.getBoardId();
     }
@@ -34,16 +36,18 @@ public class ReplyController {
      *
      * @param boardId 게시글 ID
      * @param replyId 댓글 ID
+     * @param session HTTP 세션 객체
      * @return 리다이렉트 URL
      */
     @PostMapping("/board/{boardId}/reply/{replyId}/delete")
-    public String delete(@PathVariable Integer boardId, @PathVariable Integer replyId, @SessionAttribute("sessionUser") User sessionUser) {
-        // User sessionUser = (User) session.getAttribute("sessionUser");
-        // if (sessionUser == null) {
-        //   return "redirect:/loginForm";
-        // }
+    public String delete(@PathVariable Integer boardId, @PathVariable Integer replyId, HttpSession session) {
+        // 세션에서 로그인한 사용자 정보 가져오기
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        if (sessionUser == null) {
+            return "redirect:/loginForm"; // 로그인하지 않은 경우 로그인 페이지로 리다이렉트
+        }
+
         replyService.deleteReply(replyId, sessionUser.getId(), boardId);
         return "redirect:/board/" + boardId;
     }
-
 }

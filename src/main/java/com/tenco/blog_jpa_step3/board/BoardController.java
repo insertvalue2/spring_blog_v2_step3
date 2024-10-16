@@ -25,7 +25,6 @@ import java.util.Objects;
 public class BoardController {
 
     private final BoardService boardService; // BoardService 주입
-    private final HttpSession session;
 
     /**
      * 게시글 수정 처리 메서드
@@ -33,12 +32,17 @@ public class BoardController {
      *
      * @param id        수정할 게시글의 ID
      * @param updateDTO 수정된 데이터를 담은 DTO
+     * @param session   HTTP 세션 객체
      * @return 게시글 상세보기 페이지로 리다이렉트
      */
     @PostMapping("/board/{id}/update")
-    public String update(@PathVariable(name = "id") Integer id, @ModelAttribute(name = "updateDTO") BoardDTO.UpdateDTO updateDTO) {
+    public String update(@PathVariable(name = "id") Integer id,
+                         @ModelAttribute(name = "updateDTO") BoardDTO.UpdateDTO updateDTO,
+                         HttpSession session) {
         // 세션에서 로그인한 사용자 정보 가져오기
         User sessionUser = (User) session.getAttribute("sessionUser");
+
+        // 세션 유효성 검증
         if (sessionUser == null) {
             return "redirect:/login-form"; // 로그인하지 않은 경우 로그인 페이지로 리다이렉트
         }
@@ -55,22 +59,25 @@ public class BoardController {
      * 요청 주소: **GET http://localhost:8080/board/{id}/update-form**
      * 글 수정하기 페이지 요청 메서드
      *
-     * @param id 수정할 게시글의 ID
+     * @param id      수정할 게시글의 ID
      * @param request HTTP 요청 객체
+     * @param session HTTP 세션 객체
      * @return 게시글 수정 페이지 뷰
      */
     @GetMapping("/board/{id}/update-form")
-    public String updateForm(@PathVariable(name = "id") Integer id, HttpServletRequest request) {
+    public String updateForm(@PathVariable(name = "id") Integer id,
+                             HttpServletRequest request,
+                             HttpSession session) {
 
         // 세션에서 로그인한 사용자 정보 가져오기
         User sessionUser = (User) session.getAttribute("sessionUser");
-        if(sessionUser == null){
+        if (sessionUser == null) {
             return "redirect:/login-form"; // 로그인하지 않은 경우 로그인 페이지로 리다이렉트
         }
 
         // 게시글 상세 조회 서비스 호출
         Board board = boardService.getBoardDetails(id, sessionUser);
-        if(board == null){
+        if (board == null) {
             throw new Exception404("게시글이 존재하지 않습니다");
         }
 
@@ -84,11 +91,13 @@ public class BoardController {
      * 게시글 삭제 처리 메서드
      * 요청 주소: **POST http://localhost:8080/board/{id}/delete**
      *
-     * @param id 삭제할 게시글의 ID
+     * @param id      삭제할 게시글의 ID
+     * @param session HTTP 세션 객체
      * @return 메인 페이지로 리다이렉트
      */
     @PostMapping("/board/{id}/delete")
-    public String delete(@PathVariable(name = "id") Integer id) {
+    public String delete(@PathVariable(name = "id") Integer id,
+                         HttpSession session) {
         // 세션에서 로그인한 사용자 정보 가져오기
         User sessionUser = (User) session.getAttribute("sessionUser");
 
@@ -108,11 +117,13 @@ public class BoardController {
      * 게시글 작성 처리 메서드
      * 요청 주소: **POST http://localhost:8080/board/save**
      *
-     * @param dto 게시글 작성 요청 DTO
+     * @param dto     게시글 작성 요청 DTO
+     * @param session HTTP 세션 객체
      * @return 메인 페이지로 리다이렉트
      */
     @PostMapping("/board/save")
-    public String save(@ModelAttribute BoardDTO.SaveDTO dto) {
+    public String save(@ModelAttribute BoardDTO.SaveDTO dto,
+                       HttpSession session) {
         // 세션에서 로그인한 사용자 정보 가져오기
         User sessionUser = (User) session.getAttribute("sessionUser");
 
@@ -161,20 +172,23 @@ public class BoardController {
      * 게시글 상세보기 처리 메서드
      * 요청 주소: **GET http://localhost:8080/board/{id}**
      *
-     * @param id 게시글의 ID
+     * @param id      게시글의 ID
      * @param request HTTP 요청 객체
+     * @param session HTTP 세션 객체
      * @return 게시글 상세보기 페이지 뷰
      */
     @GetMapping("/board/{id}")
-    public String detail(@PathVariable Integer id, HttpServletRequest request) {
+    public String detail(@PathVariable Integer id,
+                         HttpServletRequest request,
+                         HttpSession session) {
         // 세션에서 로그인한 사용자 정보 가져오기
         User sessionUser = (User) session.getAttribute("sessionUser");
         Board board = boardService.getBoardDetails(id, sessionUser);
 
         // 현재 사용자가 게시글의 작성자인지 확인하여 isOwner 필드 설정
         boolean isOwner = false;
-        if(sessionUser != null){
-            if(Objects.equals(sessionUser.getId(), board.getUser().getId())){
+        if (sessionUser != null && board != null && board.getUser() != null) {
+            if (Objects.equals(sessionUser.getId(), board.getUser().getId())) {
                 isOwner = true;
             }
         }
@@ -184,4 +198,5 @@ public class BoardController {
         request.setAttribute("board", board);
         return "board/detail";
     }
+
 }
